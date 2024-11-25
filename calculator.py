@@ -1,64 +1,61 @@
 import tkinter as tk
-from tkinter import messagebox
 
-def calculate(a, b, operation):
-    if operation == '+':
-        return a + b
-    elif operation == '-':
-        return a - b
-    elif operation == '*':
-        return a * b
-    elif operation == '/':
-        if b == 0:
-            return "Ошибка: Деление на ноль!"
-        return a / b
-    else:
-        return "Ошибка: Неверная операция!"
+class Calculator(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Калькулятор")
+        self.geometry("400x600")
+        self.resizable(False, False)
 
-def perform_calculation():
-    try:
-        a = float(entry_a.get())
-        b = float(entry_b.get())
-        operation = operation_var.get()
-    
-        result = calculate(a,b,operation)
-        result_label.config(text=f"Результат: {result}")
-    except ValueError:
-        messagebox.showerror("Ошибка", "Пожалуйста, введите числовые значения.")
+        self.result_var = tk.StringVar()
 
-# Создаем основное окно
-root = tk.Tk()
-root.title("Калькулятор")
+        self.create_widgets()
 
-#Поля ввода
-entry_a = tk.Entry(root)
-entry_a.grid(row=0, column=1)
-tk.Label(root, text="Введите первое число:").grid(row=0, column=0)
+    def create_widgets(self):
+        # Экран
+        entry = tk.Entry(self, textvariable=self.result_var, font=("Arial", 24), bd=10, insertwidth=2, width=14, borderwidth=4)
+        entry.grid(row=0, column=0, columnspan=4)
 
+        # Кнопки
+        buttons = [
+            '7', '8', '9', '/',
+            '4', '5', '6', '*',
+            '1', '2', '3', '-',
+            'C', '0', '=', '+'
+        ]
 
-entry_b = tk.Entry(root)
-entry_b.grid(row=1, column=1)
-tk.Label(root, text="Введите второе число:").grid(row=1, column=0)
+        row_val = 1
+        col_val = 0
 
-#Переменная для выбора операции
-operation_var = tk.StringVar(value='+')
+        for button in buttons:
+            if button == '=':
+                btn = tk.Button(self, text=button, padx=20, pady=20, font=("Arial", 18), command=self.calculate)
+            elif button == 'C':
+                btn = tk.Button(self, text=button, padx=20, pady=20, font=("Arial", 18), command=self.clear)
+            else:
+                btn = tk.Button(self, text=button, padx=20, pady=20, font=("Arial", 18), command=lambda b=button: self.append_to_expression(b))
 
-#Радио кнопки для операций
-tk.Radiobutton(root, text="+", variable=operation_var, value='+').grid(row=2, column=0)
-tk.Radiobutton(root, text="-", variable=operation_var, value='-').grid(row=2, column=1)
-tk.Radiobutton(root, text="*", variable=operation_var, value='*').grid(row=2, column=2)
-tk.Radiobutton(root, text="/", variable=operation_var, value='/').grid(row=2, column=3)
+            btn.grid(row=row_val, column=col_val)
+            col_val += 1
+            if col_val > 3:
+                col_val = 0
+                row_val += 1
 
-#Кнопка для выполнения расчета
-calculate_button = tk.Button(root, text="Вычислить", command=perform_calculation)
-calculate_button.grid(row=3, columnspan=4)
+    def append_to_expression(self, value):
+        current_expression = self.result_var.get()
+        new_expression = current_expression + str(value)
+        self.result_var.set(new_expression)
 
+    def clear(self):
+        self.result_var.set("")
 
-#Метка для отображения результата
-result_label = tk.Label(root, text="Результат: ")
-result_label.grid(row=4, columnspan=4)
+    def calculate(self):
+        try:
+            result = eval(self.result_var.get())
+            self.result_var.set(result)
+        except Exception as e:
+            self.result_var.set("Ошибка")
 
-#Запуск главного цикл приложения
-root.mainloop()
-
-
+if __name__ == "__main__":
+    app = Calculator()
+    app.mainloop()
